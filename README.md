@@ -5,14 +5,15 @@ The PDF script will add
 
 
 ## You will need the following packages to get it working:
-'''
+
+```
 Python 3.x
 pillow (Python package)
 requests (Python package)
 requests-html (Python package)
 beautifulsoup4 (Python package)
 FPDF (Python package)
-'''
+```
 
 
 If you don't know how to install a python package then just type in
