@@ -17,8 +17,9 @@ FPDF (Python package)
 
 
 If you don't know how to install a python package then just type in
+```
 pip install *Python_Package_name_here*
-
+```
 
 ## Usage:
 Just run both of them from the command line. 
