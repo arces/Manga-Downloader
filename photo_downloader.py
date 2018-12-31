@@ -1,3 +1,5 @@
+import _thread
+
 import requests
 import os
 from bs4 import BeautifulSoup
@@ -34,10 +36,10 @@ def chapter_name():
         if (link.get(
                 'value') and link.get_text() != "Fullsize" and link.get_text() != "Large" and link.get_text() != "Medium" and link.get_text() != "Small" and link.get_text() not in chapternames):
             chapterid.append(link.get('value'))
-            ##print(link.get('value'))
+            print(link.get('value'))
             # print(linkz.get('value'))
             chapternames.append(link.get_text())
-            ##print((link.get_text()))
+            print((link.get_text()))
             # print(linkz.get_text())
 
 
@@ -62,7 +64,7 @@ def clean_string(string):
     return r_string
 
 
-## print (chapterid)
+# print (chapterid)
 
 # Will start looping the chapters
 
@@ -73,9 +75,7 @@ def main_dl():
     global dir_name
     for chapter in chapterid:
 
-        ##print(chapternames[i] + " CHAPTER ID")
-
-        # Downloads the first page of each chapter to count how many pages there are in each chapter
+        label_3.config(text=chapternames[i] + " CHAPTER ID")
 
         # Will save the director name as the chapter name but cleaned up for windows
         dir_name = clean_string(chapternames[i])
@@ -100,7 +100,7 @@ def main_dl():
 
         pages = 1
         for img in new_soup.find_all("img"):
-            ## print("TEST looping through image options")
+            ##print("TEST looping through image options")
             # If the image tag has cdn.mangaeden.com in it it will know that is the link to the manga image
             looping = True
             while looping:
@@ -126,45 +126,55 @@ def main_dl():
                                 "s7.mkklcdnv" in img.get("src"))
                         or ("s8.mkklcdnv" in img.get("src"))
                         or ("s9.mkklcdnv" in img.get("src"))):
-                    ##print(img.get("src"))
-                    img_link = img.get("src")
-                    ## print(img.get("src"))
-                    # Writes the link to the file so it will go from First page to last page
-                    ## print("TEST About to write")
-                    text_string = str(img_link) + "\n" + text_string
-                    ## print("TEST Wrote")
 
-                    # makes the full path of the image to be saved at
-                    ## print("TEST About to write picture")
-
-                    full_file_path = os.path.join(dir_name, str(pages) + img_link[-4:])
-
-                    ## print("TEST Wrote image")
-                    # Will open a new file for the image to be written
-                    image_file = open(full_file_path, "wb")
-                    # Dl's the image
-                    img_r = requests.get(img_link)
-                    # Writes the image
-                    image_file.write(img_r.content)
-                    image_file.close()
                     try:
-                        # Very Important!!!!!!!!!! This will check the file to see if it downloaded properly
-                        # It opens the image and sees if it is a valid image.
-                        # If NOT then it will crash and keep looping and attempting to dl the image
-                        # If it is valid it adds one to page and then exits the loop to the next page link
-                        img = Image.open(full_file_path)
-                        img.verify()
+                        _thread.start_new_thread(download(img.get("src"), pages), ())
+                    except (Exception) as e:
+                        #print(e)
                         pages += 1
-                        looping = False
-                    except (IOError, SyntaxError) as e:
-                        # Will crash here if the image is not valid and will NOT exit the loop
-                        pass
+                        looping = False;
+                        #print("Error: unable to start download thread for "+img.get("src"))
                 else:
-
                     looping = False
 
         i += 1
         print("Finished downloading chapter \"" + dir_name + "\"")
+
+
+def download(imgURLVar, pagesVar):
+    img_link = imgURLVar
+    ##print(img_link)
+    ## print(img.get("src"))
+    # Writes the link to the file so it will go from First page to last page
+    ## print("TEST About to write")
+    # text_string = str(img_link) + "\n" + text_string
+    ## print("TEST Wrote")
+
+    # makes the full path of the image to be saved at
+    ##print("TEST About to write picture")
+    looping = True
+    full_file_path = os.path.join(dir_name, str(pagesVar) + img_link[-4:])
+    while (looping):
+        ##print("TEST Wrote image")
+        # Will open a new file for the image to be written
+        image_file = open(full_file_path, "wb")
+        # Dl's the image
+        img_r = requests.get(img_link)
+        # Writes the image
+        image_file.write(img_r.content)
+        image_file.close()
+        try:
+            # Very Important!!!!!!!!!! This will check the file to see if it downloaded properly
+            # It opens the image and sees if it is a valid image.
+            # If NOT then it will crash and keep looping and attempting to dl the image
+            # If it is valid it adds one to page and then exits the loop to the next page link
+            img = Image.open(full_file_path)
+            img.verify()
+            looping = False
+            ##print("Finished downloading " + img_link)
+        except (IOError, SyntaxError) as e:
+            # Will crash here if the image is not valid and will NOT exit the loop
+            pass
 
 
 def setupz():
@@ -176,9 +186,13 @@ def setupz():
     base_url = urlentry.get()
     r = requests.get(base_url + "/chapter_1")
     soup = BeautifulSoup(r.content, "html.parser")
-    ##print("Done packing")
+    print("Done packing")
     chapter_name()
-    main_dl()
+    try:
+        _thread.start_new_thread(main_dl(), ())
+
+    except:
+        print("Error: unable to start thread")
 
 
 button1 = Button(tf, text="Download", width=45, command=setupz)
