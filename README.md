@@ -1,7 +1,7 @@
 # Manga Downloader
 
 This is a manga Downloader and PDF script that will download all the manga from any given url from [mangakakalot.com](http://mangakakalot.com).
-The PDF script will add
+The PDF script will add the completed files into a pdf
 
 
 ## You will need the following packages to get it working:

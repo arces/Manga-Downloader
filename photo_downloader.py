@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from tkinter import *
 from PIL import Image
 
-base_url = "http://mangakakalot.com/chapter/made_in_abyss"
+base_url = "https://mangakakalot.com/chapter/steinsgate"
 
 first_chapter_url = base_url + "/chapter_1"
 chapternames = []
@@ -23,7 +23,7 @@ label_2 = Label(bf, text="Only works with Mangakakalot")
 label_3 = Label(bf, text="GUI will freeze when downloading, this is normal")
 urlentry = Entry(tf, width=50)
 urlentry.delete(0, END)
-urlentry.insert(0, "http://mangakakalot.com/chapter/made_in_abyss")
+urlentry.insert(0, "https://mangakakalot.com/chapter/steinsgate")
 root.title("Manga Downloader")
 
 
@@ -34,16 +34,17 @@ def chapter_name():
         if (link.get(
                 'value') and link.get_text() != "Fullsize" and link.get_text() != "Large" and link.get_text() != "Medium" and link.get_text() != "Small" and link.get_text() not in chapternames):
             chapterid.append(link.get('value'))
-            print(link.get('value'))
+            ##print(link.get('value'))
             # print(linkz.get('value'))
             chapternames.append(link.get_text())
-            print((link.get_text()))
+            ##print((link.get_text()))
             # print(linkz.get_text())
 
 
 # Will remove any characters that can not be saved in the file system such as : or /
 def clean_string(string):
     r_string = string
+    r_string = r_string.replace("...", "")
     r_string = r_string.replace("?", "")
     r_string = r_string.replace("\\", "")
     r_string = r_string.replace("|", "")
@@ -53,10 +54,15 @@ def clean_string(string):
     r_string = r_string.replace("\"", "")
     r_string = r_string.replace(">", "")
     r_string = r_string.replace("<", "")
+    r_string = r_string.replace("=", "")
+    r_string = r_string.replace("[", "")
+    r_string = r_string.replace("]", "")
+    r_string = r_string.replace(";", "")
+    r_string = r_string.replace("'", "")
     return r_string
 
 
-# print (chapterid)
+## print (chapterid)
 
 # Will start looping the chapters
 
@@ -67,12 +73,10 @@ def main_dl():
     global dir_name
     for chapter in chapterid:
 
-        print(chapternames[i] + " CHAPTER ID")
+        ##print(chapternames[i] + " CHAPTER ID")
 
         # Downloads the first page of each chapter to count how many pages there are in each chapter
-        # r = requests.get(base_url + "/chapter_" + chapter)
-        # Makes a new soup object
-        # soup = BeautifulSoup(r.content, "html.parser")
+
         # Will save the director name as the chapter name but cleaned up for windows
         dir_name = clean_string(chapternames[i])
         if not os.path.exists(dir_name):
@@ -90,36 +94,52 @@ def main_dl():
         text_string = " "
         # loops through each <option> tag and sees if its an id, which the length is much longer, or a page number, less than 5 just to be safe
 
-
-
-
         new_r = requests.get(base_url + "/chapter_" + chapter)
         # Makes a new soup object for the current page
         new_soup = BeautifulSoup(new_r.content, "html.parser")
 
         pages = 1
         for img in new_soup.find_all("img"):
-            # print("TEST looping through image options")
+            ## print("TEST looping through image options")
             # If the image tag has cdn.mangaeden.com in it it will know that is the link to the manga image
             looping = True
             while looping:
                 if (("mgimgcdn.com" in img.get("src")) or ("mgicdn.com" in img.get("src")) or (
-                            "bp.blogspot.com" in img.get("src"))):
-                    print(img.get("src"))
+                        "bp.blogspot.com" in img.get("src")) or ("s1.mkklcdnv2.com" in img.get("src")) or (
+                        "s8.mkklcdn.com" in img.get("src")) or ("s7.mkklcdn.com" in img.get("src")) or (
+                        "s6.mkklcdn.com" in img.get("src")) or (
+                        "s5.mkklcdn.com" in img.get("src")) or (
+                        "s4.mkklcdn.com" in img.get("src")) or (
+                        "s3.mkklcdn.com" in img.get("src")) or (
+                        "s2.mkklcdn.com" in img.get("src")) or (
+                        "s1.mkklcdn.com" in img.get("src")) or (
+                        "4.bp.blogspot.com" in img.get("src")) or (
+                        "3.bp.blogspot.com" in img.get("src")) or (
+                        "2.bp.blogspot.com" in img.get("src")) or (
+                        "1.bp.blogspot.com" in img.get("src")) or (
+                        "s2.mkklcdnv" in img.get("src")) or (
+                        "s5.mkklcdnv" in img.get("src")) or (
+                        "s3.mkklcdnv" in img.get("src")) or (
+                        "s4.mkklcdnv" in img.get("src")) or (
+                        "s1.mkklcdnv" in img.get("src"))
+                        or ("s6.mkklcdnv" in img.get("src")) or (
+                                "s7.mkklcdnv" in img.get("src"))
+                        or ("s8.mkklcdnv" in img.get("src"))
+                        or ("s9.mkklcdnv" in img.get("src"))):
+                    ##print(img.get("src"))
                     img_link = img.get("src")
-                    # print(img.get("src"))
+                    ## print(img.get("src"))
                     # Writes the link to the file so it will go from First page to last page
-                    # print("TEST About to write")
+                    ## print("TEST About to write")
                     text_string = str(img_link) + "\n" + text_string
-                    # print("TEST Wrote")
+                    ## print("TEST Wrote")
 
                     # makes the full path of the image to be saved at
-                    # print("TEST About to write picture")
+                    ## print("TEST About to write picture")
 
                     full_file_path = os.path.join(dir_name, str(pages) + img_link[-4:])
 
-                    pages += 1
-                    # print("TEST Wrote image")
+                    ## print("TEST Wrote image")
                     # Will open a new file for the image to be written
                     image_file = open(full_file_path, "wb")
                     # Dl's the image
@@ -128,12 +148,19 @@ def main_dl():
                     image_file.write(img_r.content)
                     image_file.close()
                     try:
+                        # Very Important!!!!!!!!!! This will check the file to see if it downloaded properly
+                        # It opens the image and sees if it is a valid image.
+                        # If NOT then it will crash and keep looping and attempting to dl the image
+                        # If it is valid it adds one to page and then exits the loop to the next page link
                         img = Image.open(full_file_path)
                         img.verify()
+                        pages += 1
                         looping = False
                     except (IOError, SyntaxError) as e:
+                        # Will crash here if the image is not valid and will NOT exit the loop
                         pass
                 else:
+
                     looping = False
 
         i += 1
@@ -149,7 +176,7 @@ def setupz():
     base_url = urlentry.get()
     r = requests.get(base_url + "/chapter_1")
     soup = BeautifulSoup(r.content, "html.parser")
-    print("Done packing")
+    ##print("Done packing")
     chapter_name()
     main_dl()
 
