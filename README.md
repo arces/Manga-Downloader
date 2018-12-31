@@ -28,7 +28,7 @@ Just run both of them from the command line.
  
 <b>photodownloader.py</b> will make folders and download to those folders were it was called from.
 
-1.Enter in a URL that is similar in format to the default one.
+1. Enter in a URL that is similar in format to the default one.
 
 
 <b>pdf.py</b> will look for those folders and take the images from them and make a pdf based off of the options selected.
@@ -36,7 +36,7 @@ Just run both of them from the command line.
 1. Check "First Page Blank?" if you would like the first page of each pdf to be a blank page (Useful to know when a new chapter might start)
 2. Check "Combo" if you would like to add all the chapters into one large PDF called "combo.pdf" (<b>See known bugs below and FAQ</b>)
 
-##Known Bugs:
+## Known Bugs:
 1. Due to how the algorithm in the PDF.py file is, it will not recognize multiples of 10.
 <b>Ex</b>: Out of the this list of chapters [1,2,3,4,5,6,7,8,9,10,11,12,13] it will put it in the following order 
  [1,10,11,12,13,2,3,4,5,6,7,8,9] if combo checkbox is selected.
