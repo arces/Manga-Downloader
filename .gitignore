@@ -306,4 +306,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Visual Studio Code workspace files
+.vscode
+
 # End of https://www.gitignore.io/api/macos,python,windows,jetbrains,jetbrains+all
