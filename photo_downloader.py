@@ -6,12 +6,12 @@ import tkinter
 from bs4 import BeautifulSoup
 from PIL import Image
 
-# Global variable definitions
-base_url = "https://mangakakalot.com/chapter/steinsgate"
+base_url = "https://manganelo.com/chapter/read_one_piece_manga_online_free4"
+
 first_chapter_url = base_url + "/chapter_1"
 chapternames = []
 chapterid = []
-r = requests.get("http://mangakakalot.com")
+r = requests.get("http://manganelo.com")
 soup = BeautifulSoup(r.content, "html.parser")
 i = 0
 pages = 0
@@ -28,7 +28,7 @@ urlentry = tkinter.Entry(tf, width=50)
 urlentry.delete(0, tkinter.END)
 urlentry.insert(0, "https://mangakakalot.com/chapter/steinsgate")
 root.title("Manga Downloader")
-
+failedloops = 0
 
 # Build the request opener to prevent download requests from getting blocked
 opener=urllib.request.build_opener()
@@ -39,10 +39,17 @@ urllib.request.install_opener(opener)
 # Finds all of the id's of the chapters and the names of the chapters
 def chapter_name():
     for link in soup.find_all("option"):
-        # print(link)
-        if (link.get('value') and link.get_text() != "Fullsize" and link.get_text() != "Large" and link.get_text() != "Medium" and link.get_text() != "Small" and link.get_text() not in chapternames):
-            chapterid.append(link.get('value'))
+        print(link)
+        if (
+                link.get_text() != "Fullsize" and link.get_text() != "Large" and link.get_text() != "Medium" and link.get_text() != "Small" and link.get_text() not in chapternames):
+            chapterid.append(link.get('data-c'))
+            print("Printing link.get(data-c)")
+            print(link.get('data-c'))
+            # print(linkz.get('value'))
             chapternames.append(link.get_text())
+            print("Printing link.get_text")
+            print((link.get_text()))
+            # print(linkz.get_text())
 
 
 # Will remove any characters that can not be saved in the file system such as : or /
@@ -73,9 +80,15 @@ def dl_loop():
     global dir_name
     for chapter in chapterid:
 
+        print(chapternames[i] + " CHAPTER ID")
+
+        # Downloads the first page of each chapter to count how many pages there are in each chapter
+
         # Will save the director name as the chapter name but cleaned up for windows
         dir_name = clean_string(chapternames[i])
+
         if not os.path.exists(dir_name):
+            print(dir_name)
             os.makedirs(dir_name)
 
         # Checks if the last character in the title name is a space. Windows will auto delete the last character if it is a space and will result in python not being able to find the dir
@@ -91,39 +104,23 @@ def dl_loop():
         new_soup = BeautifulSoup(new_r.content, "html.parser")
 
         pages = 1
+        failedloops = 0
         for img in new_soup.find_all("img"):
+            # print("TEST looping through image options")
             # If the image tag has cdn.mangaeden.com in it it will know that is the link to the manga image
             looping = True
             while looping:
-                if (("mgimgcdn.com" in img.get("src")) or ("mgicdn.com" in img.get("src")) or (
-                        "bp.blogspot.com" in img.get("src")) or ("s1.mkklcdnv2.com" in img.get("src")) or (
-                        "s8.mkklcdn.com" in img.get("src")) or ("s7.mkklcdn.com" in img.get("src")) or (
-                        "s6.mkklcdn.com" in img.get("src")) or (
-                        "s5.mkklcdn.com" in img.get("src")) or (
-                        "s4.mkklcdn.com" in img.get("src")) or (
-                        "s3.mkklcdn.com" in img.get("src")) or (
-                        "s2.mkklcdn.com" in img.get("src")) or (
-                        "s1.mkklcdn.com" in img.get("src")) or (
-                        "4.bp.blogspot.com" in img.get("src")) or (
-                        "3.bp.blogspot.com" in img.get("src")) or (
-                        "2.bp.blogspot.com" in img.get("src")) or (
-                        "1.bp.blogspot.com" in img.get("src")) or (
-                        "s2.mkklcdnv" in img.get("src")) or (
-                        "s5.mkklcdnv" in img.get("src")) or (
-                        "s3.mkklcdnv" in img.get("src")) or (
-                        "s4.mkklcdnv" in img.get("src")) or (
-                        "s1.mkklcdnv" in img.get("src"))
-                        or ("s6.mkklcdnv" in img.get("src")) or (
-                                "s7.mkklcdnv" in img.get("src"))
-                        or ("s8.mkklcdnv" in img.get("src"))
-                        or ("s9.mkklcdnv" in img.get("src"))):
+                if (("/chapter" in img.get("src"))):
+                    ##print(img.get("src"))
                     img_link = img.get("src")
+                    print(img.get("src"))
                     # Writes the link to the file so it will go from First page to last page
                     text_string = str(img_link) + "\n" + text_string
 
                     # makes the full path of the image to be saved at
                     full_file_path = os.path.join(dir_name, str(pages) + img_link[-4:])
 
+                    print("TEST Wrote image")
                     # Will open a new file for the image to be written
                     image_file = open(full_file_path, "wb")
                     # Dl's the image
@@ -148,8 +145,14 @@ def dl_loop():
 
                     looping = False
 
-        i += 1
-        print("Finished downloading chapter \"" + dir_name + "\"")
+                # Page might fail, had a couple times when their page was giving php errors and refreshing it would give me the correct page
+                if (pages == 1 and failedloops < 3):
+                    failedloops+=1
+                    new_r = requests.get(base_url + "/chapter_" + chapter)
+                    looping = True
+
+    i += 1
+    print("Finished downloading chapter \"" + dir_name + "\"")
 
 
 def main():
@@ -163,7 +166,47 @@ def main():
     button1.pack()
     root.mainloop()
 
+    base_url = urlentry.get()
+    r = requests.get(base_url + "/chapter_1")
+    soup = BeautifulSoup(r.content, "html.parser")
+    print("Done packing")
+    chapter_name()
+    main_dl()
 
-# Run main function
-if __name__ == "__main__":
-    main()
+
+button1 = Button(tf, text="Download", width=45, command=setupz)
+
+bf.pack(side=BOTTOM)
+tf.pack()
+urlentry.pack()
+label_1.pack()
+label_2.pack()
+label_3.pack()
+button1.pack()
+root.mainloop()
+
+print("All done")
+
+'''
+Sources:
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+http://www.thegeekstuff.com/2013/06/python-list/?utm_source=feedly
+https://stackoverflow.com/questions/273192/how-to-check-if-a-directory-exists-and-create-it-if-necessary
+https://stackoverflow.com/questions/3559559/how-to-delete-a-character-from-a-string-using-python
+http://anh.cs.luc.edu/python/hands-on/3.1/handsonHtml/functions.html
+https://stackoverflow.com/questions/3437059/does-python-have-a-string-contains-substring-method
+https://stackoverflow.com/questions/7983820/get-the-last-4-characters-of-a-string
+https://opensource.com/article/17/2/python-tricks-artists
+How it works:
+    Downloads 1 page from the manga that the user provides
+    Loops through that pages and gets all the chapter id's and chapter names
+        Downloads the a chapter (stored from most recent to oldest) and find out how many pages there are
+        Cleans up the chapter name (removes chars that can't be used as a folder name) and makes a new directory if one is not made already
+        Stores the number of pages as int pages
+            Loops through the pages and searches for the string "mgimgcdn.com" as the src in all the <img> tags on the page
+            Downloads the img from the page and names it by the page number and last 4 of the file name (.png or .jpg)
+            Closes the file and subtracts 1 from pages
+            Repeates until all pages for the chapter are done downloading
+        Subtracts 1 from int i which keeps track of what chapter is downloading (naming purpose only)
+    Prints "All done" when finished
+'''
