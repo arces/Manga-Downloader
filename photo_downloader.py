@@ -6,8 +6,8 @@ import tkinter
 from bs4 import BeautifulSoup
 from PIL import Image
 
+# Global Variable Definitions
 base_url = "https://manganelo.com/chapter/read_one_piece_manga_online_free4"
-
 first_chapter_url = base_url + "/chapter_1"
 chapternames = []
 chapterid = []
@@ -70,6 +70,7 @@ def setup():
     base_url = urlentry.get()
     r = requests.get(base_url + "/chapter_1")
     soup = BeautifulSoup(r.content, "html.parser")
+    print("Done packing")
     chapter_name()
     dl_loop()
 
@@ -157,6 +158,7 @@ def dl_loop():
 
 def main():
     button1 = tkinter.Button(tf, text="Download", width=45, command=setup)
+
     bf.pack(side=tkinter.BOTTOM)
     tf.pack()
     urlentry.pack()
@@ -166,47 +168,9 @@ def main():
     button1.pack()
     root.mainloop()
 
-    base_url = urlentry.get()
-    r = requests.get(base_url + "/chapter_1")
-    soup = BeautifulSoup(r.content, "html.parser")
-    print("Done packing")
-    chapter_name()
-    main_dl()
+    print("All done")
 
 
-button1 = Button(tf, text="Download", width=45, command=setupz)
-
-bf.pack(side=BOTTOM)
-tf.pack()
-urlentry.pack()
-label_1.pack()
-label_2.pack()
-label_3.pack()
-button1.pack()
-root.mainloop()
-
-print("All done")
-
-'''
-Sources:
-https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-http://www.thegeekstuff.com/2013/06/python-list/?utm_source=feedly
-https://stackoverflow.com/questions/273192/how-to-check-if-a-directory-exists-and-create-it-if-necessary
-https://stackoverflow.com/questions/3559559/how-to-delete-a-character-from-a-string-using-python
-http://anh.cs.luc.edu/python/hands-on/3.1/handsonHtml/functions.html
-https://stackoverflow.com/questions/3437059/does-python-have-a-string-contains-substring-method
-https://stackoverflow.com/questions/7983820/get-the-last-4-characters-of-a-string
-https://opensource.com/article/17/2/python-tricks-artists
-How it works:
-    Downloads 1 page from the manga that the user provides
-    Loops through that pages and gets all the chapter id's and chapter names
-        Downloads the a chapter (stored from most recent to oldest) and find out how many pages there are
-        Cleans up the chapter name (removes chars that can't be used as a folder name) and makes a new directory if one is not made already
-        Stores the number of pages as int pages
-            Loops through the pages and searches for the string "mgimgcdn.com" as the src in all the <img> tags on the page
-            Downloads the img from the page and names it by the page number and last 4 of the file name (.png or .jpg)
-            Closes the file and subtracts 1 from pages
-            Repeates until all pages for the chapter are done downloading
-        Subtracts 1 from int i which keeps track of what chapter is downloading (naming purpose only)
-    Prints "All done" when finished
-'''
+# Run main function
+if __name__ == "__main__":
+    main()
