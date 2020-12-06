@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from PIL import Image
 
 # Global Variable Definitions
-base_url = "https://manganelo.com/chapter/read_one_piece_manga_online_free4"
+base_url = "https://manganelo.com/chapter/yovbxa13526492"
 first_chapter_url = base_url + "/chapter_1"
 chapternames = []
 chapterid = []
