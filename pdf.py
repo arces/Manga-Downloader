@@ -35,7 +35,7 @@ def main(blank, combo):
     #print("these are the folders ^")
     if combo==0:
         for f in folders:
-            if (f[:2] == "Ch" or f[:3] =='vol' or f[:2] == "ch"):
+            if (f[:2] == "Ch" or f[:3] =='vol' or f[:3] =='Vol' or f[:2] == "ch"):
                 images = []
                 image_names = []
                 images = os.listdir(os.path.join(os.getcwd() + "\\" + f))
@@ -72,7 +72,7 @@ def main(blank, combo):
                         full_image_name = str(i)
                         #errors.append(full_image_name + " from "+f)
                         #pdf.cell(40, 10, "Error adding image " + full_image_name + " from " + f)
-                        #print("Error adding image " + full_image_name + " from " + f)
+                        print("Error adding image " + full_image_name + " from " + f)
                     i = i + 1
                 try:
                     pdf.close()

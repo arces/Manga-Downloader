@@ -5,6 +5,7 @@ import os
 import tkinter
 from bs4 import BeautifulSoup
 from PIL import Image
+import magic
 
 # Global Variable Definitions
 base_url = "https://manganelo.com/chapter/yovbxa13526492"
@@ -26,29 +27,30 @@ label_2 = tkinter.Label(bf, text="Only works with Mangakakalot")
 label_3 = tkinter.Label(bf, text="GUI will freeze when downloading, this is normal")
 urlentry = tkinter.Entry(tf, width=50)
 urlentry.delete(0, tkinter.END)
-urlentry.insert(0, "https://mangakakalot.com/chapter/steinsgate")
+urlentry.insert(0, "https://manganelo.com/chapter/yovbxa13526492")
 root.title("Manga Downloader")
 failedloops = 0
 
 # Build the request opener to prevent download requests from getting blocked
-opener=urllib.request.build_opener()
-opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-Agent',
+                      'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
 urllib.request.install_opener(opener)
 
 
 # Finds all of the id's of the chapters and the names of the chapters
 def chapter_name():
     for link in soup.find_all("option"):
-        print(link)
+        #print(link)
         if (
                 link.get_text() != "Fullsize" and link.get_text() != "Large" and link.get_text() != "Medium" and link.get_text() != "Small" and link.get_text() not in chapternames):
             chapterid.append(link.get('data-c'))
-            print("Printing link.get(data-c)")
-            print(link.get('data-c'))
+            #print("Printing link.get(data-c)")
+            #print(link.get('data-c'))
             # print(linkz.get('value'))
             chapternames.append(link.get_text())
-            print("Printing link.get_text")
-            print((link.get_text()))
+            #print("Printing link.get_text")
+            #print((link.get_text()))
             # print(linkz.get_text())
 
 
@@ -77,6 +79,7 @@ def setup():
 
 def dl_loop():
     global i
+    global filetyperenamed
     global pages
     global dir_name
     for chapter in chapterid:
@@ -100,7 +103,7 @@ def dl_loop():
         text_string = " "
         # loops through each <option> tag and sees if its an id, which the length is much longer, or a page number, less than 5 just to be safe
 
-        new_r = requests.get(base_url + "/chapter_" + chapter)
+        new_r = requests.get(base_url + "/chapter_" + chapter, headers={'referer': "https://manganelo.com/"})
         # Makes a new soup object for the current page
         new_soup = BeautifulSoup(new_r.content, "html.parser")
 
@@ -111,7 +114,7 @@ def dl_loop():
             # If the image tag has cdn.mangaeden.com in it it will know that is the link to the manga image
             looping = True
             while looping:
-                if (("/chapter" in img.get("src"))):
+                if (("/chapter" in img.get("src")) or ("/vol" in img.get("src")) ):
                     ##print(img.get("src"))
                     img_link = img.get("src")
                     print(img.get("src"))
@@ -121,11 +124,11 @@ def dl_loop():
                     # makes the full path of the image to be saved at
                     full_file_path = os.path.join(dir_name, str(pages) + img_link[-4:])
 
-                    print("TEST Wrote image")
+                    #print("TEST Wrote image")
                     # Will open a new file for the image to be written
                     image_file = open(full_file_path, "wb")
                     # Dl's the image
-                    img_r = requests.get(img_link)
+                    img_r = requests.get(img_link, headers={'referer': "https://manganelo.com/"})
                     # Writes the image
                     image_file.write(img_r.content)
                     image_file.close()
@@ -136,6 +139,18 @@ def dl_loop():
                         # If it is valid it adds one to page and then exits the loop to the next page link
                         img = Image.open(full_file_path)
                         img.verify()
+                        #IMAGE CHECK
+
+                        imagetype = magic.from_file(full_file_path,mime=True)
+                        if(imagetype=="image/jpeg"):
+                            if(full_file_path[-4:]!="jpg"):
+                                os.rename(full_file_path,(full_file_path[:-3])+"jpg")
+                                print("renamed to jpg")
+                        elif(imagetype=="image/png"):
+                            if(full_file_path[-4:]!="png"):
+                                os.rename(full_file_path,(full_file_path[:-3])+"png")
+                                print("renamed to png")
+
                         pages += 1
                         looping = False
                     except (IOError, SyntaxError) as e:
@@ -148,12 +163,12 @@ def dl_loop():
 
                 # Page might fail, had a couple times when their page was giving php errors and refreshing it would give me the correct page
                 if (pages == 1 and failedloops < 3):
-                    failedloops+=1
-                    new_r = requests.get(base_url + "/chapter_" + chapter)
-                    looping = True
-
-    i += 1
-    print("Finished downloading chapter \"" + dir_name + "\"")
+                    failedloops += 1
+                    #Commenting this out until I figure out how to make it work properly
+                    #new_r = requests.get(base_url + "/chapter_" + chapter,headers={'referer': "https://manganelo.com/"})
+                    #looping = True
+        i += 1
+        print("Finished downloading chapter \"" + dir_name + "\"")
 
 
 def main():
